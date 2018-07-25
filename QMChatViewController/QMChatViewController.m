@@ -91,8 +91,11 @@ QMChatDataSourceDelegate, QMAudioRecordToolbarDelegate>
     self.systemInputToolbar.inputView = self.inputToolbar;
     self.systemInputToolbar.frame = CGRectMake(0, 0, 0, kQMSystemInputToolbarDebugHeight);
     self.systemInputToolbar.hostViewFrameChangeBlock = ^(UIView *view, BOOL animated) {
+        CGRect chatViewAbsoluteFrame = [QMChatViewController absoluteFrameForView:weakSelf.view];
         
-        CGFloat pos = weakSelf.view.frame.size.height - [weakSelf.view.superview convertPoint:view.frame.origin toView:weakSelf.view].y;
+        CGFloat chatViewBottomYPoint = CGRectGetMaxY(chatViewAbsoluteFrame);
+        CGFloat keyboardTopYPoint = CGRectGetMinY(view.frame);
+        CGFloat pos = chatViewBottomYPoint - keyboardTopYPoint;
         
         if (weakSelf.inputToolbar.contentView.textView.isFirstResponder) {
             if (view.superview.frame.origin.y > 0 && pos <= 0) {
@@ -112,6 +115,15 @@ QMChatDataSourceDelegate, QMAudioRecordToolbarDelegate>
     self.inputToolbar.contentView.textView.inputAccessoryView = self.systemInputToolbar;
     
     self.edgesForExtendedLayout = UIRectEdgeNone;
+}
+
+//Calculation absolute frame for QMChatViewController view to device screen
++ (CGRect)absoluteFrameForView:(UIView *)view
+{
+    id<UIApplicationDelegate> appDelegate = [[UIApplication sharedApplication] delegate];
+    
+    return [view convertRect:view.frame
+                      toView:appDelegate.window];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
